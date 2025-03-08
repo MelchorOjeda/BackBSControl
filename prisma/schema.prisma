@@ -1,0 +1,126 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id               Int       @id @default(autoincrement()) 
+  nombres         String
+  apellido        String
+  correo          String     @unique
+  contra          String
+  rol             Rol
+  telefono        String?
+  foto            String?
+  citasComoCliente Cita[]     @relation("ClienteCita")
+  citasComoBarbero Cita[]     @relation("BarberoCita")
+  servicios       Servicio[] @relation("BarberoServicios")
+  ventas          Venta[]
+  movimientosCaja Caja[]     @relation("UsuarioCaja")
+  creadoEn        DateTime   @default(now())
+}
+
+enum Rol {
+  ADMIN
+  BARBERO
+  RECEPCIONISTA
+  CLIENTE
+}
+
+model Cita {
+  id         Int       @id @default(autoincrement()) 
+  clienteId  Int
+  barberoId  Int
+  servicioId Int
+  fechaHora  DateTime
+  estado     EstadoCita
+
+  cliente  Usuario  @relation(fields: [clienteId], references: [id], name: "ClienteCita")
+  barbero  Usuario  @relation(fields: [barberoId], references: [id], name: "BarberoCita")
+  servicio Servicio @relation(fields: [servicioId], references: [id])
+}
+
+enum EstadoCita {
+  PENDIENTE
+  CONFIRMADA
+  CANCELADA
+  FINALIZADA
+}
+
+model Servicio {
+  id          Int            @id @default(autoincrement()) 
+  nombre      String
+  precio      Decimal
+  duracion    Int?
+  descripcion String?
+  icono       String?
+  barberoId   Int?
+  barbero     Usuario?       @relation(fields: [barberoId], references: [id], name: "BarberoServicios")
+  citas       Cita[]
+  detalles    DetalleVenta[] @relation("ServicioDetalle")
+}
+
+model Producto {
+  id          Int       @id @default(autoincrement()) 
+  nombre      String
+  marca       String?
+  descripcion String?
+  cantidad    Int
+  precio      Decimal
+  icono       String?
+  creadoEn    DateTime @default(now())
+
+  detalles    DetalleVenta[] @relation("ProductoDetalle")
+}
+
+model Venta {
+  id          Int       @id @default(autoincrement()) 
+  usuarioId   Int
+  total       Decimal
+  metodoPago  MetodoPago
+  descripcion String?
+  creadoEn    DateTime   @default(now())
+
+  usuario     Usuario        @relation(fields: [usuarioId], references: [id])
+  detalles    DetalleVenta[]
+}
+
+enum MetodoPago {
+  EFECTIVO
+  TARJETA
+  TRANSFERENCIA
+}
+
+model DetalleVenta {
+  id         Int      @id @default(autoincrement()) 
+  ventaId    Int
+  productoId Int?
+  servicioId Int?
+  cantidad   Int
+  precio     Decimal
+
+  venta    Venta     @relation(fields: [ventaId], references: [id])
+  producto Producto? @relation(fields: [productoId], references: [id], name: "ProductoDetalle")
+  servicio Servicio? @relation(fields: [servicioId], references: [id], name: "ServicioDetalle")
+}
+
+model Caja {
+  id          Int       @id @default(autoincrement()) 
+  usuarioId   Int
+  tipo        TipoMovimiento
+  monto       Decimal
+  descripcion String?
+  creadoEn    DateTime @default(now())
+
+  usuario     Usuario @relation(fields: [usuarioId], references: [id], name: "UsuarioCaja")
+}
+
+enum TipoMovimiento {
+  INGRESO
+  EGRESO
+}
+
