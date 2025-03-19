@@ -2,7 +2,8 @@ import { Controller, Get, Post, Put, Delete, Param, Body, BadRequestException } 
 import { CitaService } from './cita.service';
 import { CrearCitaDto } from './dto/crear-cita.dto';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
-import { EstadoCita } from '@prisma/client';
+import { Cita, EstadoCita } from '@prisma/client';
+import { ActualizarCitaDto } from './dto/actualizar-cita.dto';
 
 @ApiTags('Citas')
 @Controller('citas')
@@ -39,10 +40,16 @@ export class CitaController {
     return this.citaService.obtenerCitasPorBarbero(Number(barberoId));
   }
 
-  @ApiOperation({ summary: 'Actualizar estado de una cita' })
-  @Put(':id/estado')
-  actualizarEstado(@Param('id') id: number, @Body() data: { estado: EstadoCita }) {
-    return this.citaService.actualizarEstadoCita(Number(id), data.estado);
+  @ApiOperation ({ summary: 'Obtener citas por estado'})
+  @Get('estado/:estado')
+  obtenerPorEstado(@Param('estado') estado: EstadoCita){
+    return this.citaService.obtenerCitasPorEstado(estado);
+  }
+
+  @ApiOperation({ summary: 'Actualizar de una cita' })
+  @Put(':id')
+  actualizar(@Param('id') id: number, @Body() data: ActualizarCitaDto) {
+    return this.citaService.actualizarCita(Number(id), data);
   }
 
   @ApiOperation({ summary: 'Eliminar una cita' })

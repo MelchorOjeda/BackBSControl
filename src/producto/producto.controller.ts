@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Put, Delete, Body, Param } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body } from '@nestjs/common';
 import { ProductoService } from './producto.service';
-import { Prisma } from '@prisma/client';
+import { CrearProductoDto } from './dto/crear-producto.dto';
+import { ActualizarProductoDto } from './dto/actualizar-producto.dto';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
 @ApiTags('Productos')
@@ -10,7 +11,7 @@ export class ProductoController {
 
   @ApiOperation({ summary: 'Crear un nuevo producto' })
   @Post()
-  crear(@Body() data: Prisma.ProductoCreateInput) {
+  crear(@Body() data: CrearProductoDto) {
     return this.productoService.crearProducto(data);
   }
 
@@ -23,12 +24,24 @@ export class ProductoController {
   @ApiOperation({ summary: 'Obtener un producto por ID' })
   @Get(':id')
   obtenerPorId(@Param('id') id: number) {
-    return this.productoService.obtenerProductoPorId(id);
+    return this.productoService.obtenerProductoPorId(Number(id));
+  }
+
+  @ApiOperation({ summary: 'Obtener productos por cantidad' })
+  @Get('cantidad/:cantidad')
+  obtenerPorCantidad(@Param('cantidad') cantidad: number) {
+    return this.productoService.obtenerProductosPorCantidad(Number(cantidad));
+  }
+
+  @ApiOperation({ summary: 'Actualizar un producto por ID' })
+  @Put(':id')
+  actualizar(@Param('id') id: number, @Body() data: ActualizarProductoDto) {
+    return this.productoService.actualizarProducto(Number(id), data);
   }
 
   @ApiOperation({ summary: 'Eliminar un producto por ID' })
   @Delete(':id')
   eliminar(@Param('id') id: number) {
-    return this.productoService.eliminarProducto(id);
+    return this.productoService.eliminarProducto(Number(id));
   }
 }

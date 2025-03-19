@@ -2,6 +2,7 @@ import { Injectable, BadRequestException, NotFoundException } from '@nestjs/comm
 import { PrismaService } from '../prisma/prisma.service';
 import { CrearCitaDto } from './dto/crear-cita.dto';
 import { EstadoCita, Cita } from '@prisma/client';
+import { ActualizarCitaDto } from './dto/actualizar-cita.dto';
 
 @Injectable()
 export class CitaService {
@@ -82,7 +83,14 @@ export class CitaService {
     });
   }
 
-  async actualizarEstadoCita(id: number, estado: EstadoCita) {
+  async obtenerCitasPorEstado(estado: EstadoCita){
+  return this.prisma.cita.findMany({
+    where: { estado },
+    include: { cliente: true, barbero: true, servicio: true},
+  });
+  }
+
+  async actualizarCita(id: number, data: ActualizarCitaDto) {
     const cita = await this.prisma.cita.findUnique({ where: { id } });
 
     if (!cita) {
@@ -91,7 +99,7 @@ export class CitaService {
 
     return this.prisma.cita.update({
       where: { id },
-      data: { estado },
+      data,
     });
   }
 
